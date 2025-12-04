@@ -1,50 +1,64 @@
-# Welcome to your Expo app 👋
+# Uber Clone (Expo + Clerk) 🚗
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first Uber-style experience built with Expo Router and React Native. The app includes onboarding, Clerk authentication, live location capture, Google Places search, driver markers on a map, and recent-ride cards with static map previews.
 
-## Get started
+## Features
+- Onboarding carousel and auth flows (email/password via Clerk, Google CTA placeholder)
+- Expo Router navigation with tabbed home, rides, chat, and profile stacks
+- Device location permissions and map with nearby driver markers
+- Google Places autocomplete for destination search and Geoapify static map previews
+- Ride list cards with driver details, timing, and payment status
+- Neon serverless Postgres endpoint stub for persisting users
 
-1. Install dependencies
+## Stack
+- Expo 54, React Native 0.81, React 19, TypeScript, Expo Router
+- Clerk Expo for authentication, Zustand for state, NativeWind/Tailwind styling
+- react-native-maps, react-native-google-places-autocomplete, Geoapify static maps
+- Neon serverless Postgres client for the `/app/(api)/user+api.ts` route
 
-   ```bash
-   npm install
-   ```
+## Prerequisites
+- Node.js 18+ and npm (project uses `npm` via `package-lock.json`)
+- Xcode (for iOS simulator) and/or Android Studio (for emulator), or Expo Go on a device
 
-2. Start the app
+## Environment
+Create a `.env` in the project root with the required keys:
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+EXPO_PUBLIC_GOOGLE_API_KEY=...
+EXPO_PUBLIC_GEOAPIFY_API_KEY=...
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Notes:
+- Google key must allow Maps SDK + Places API for maps and autocomplete.
+- Geoapify key powers static previews in ride cards.
+- `DATABASE_URL` is used by the Neon-backed route in `app/(api)/user+api.ts`.
 
-## Learn more
+## Local Development
+1) Install dependencies
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+2) Start the dev server (choose device/emulator/Expo Go when prompted)
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Additional scripts:
+- `npm run android` / `npm run ios` to build and run native projects
+- `npm run web` to run in the browser
+- `npm run lint` for ESLint
+- `npm run reset-project` to restore the starter template (destructive)
 
-## Join the community
+## Project Structure (high level)
+- `app/` Expo Router routes (auth stack, tabs, modal, API route)
+- `components/` Reusable UI (buttons, inputs, map, ride cards)
+- `store/` Zustand stores for location and driver selection
+- `lib/` Map helpers (region calculation, driver markers, ETA/price estimation)
+- `constants/` Icons, images, and onboarding copy
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Notes
+- Location services must be enabled in the simulator/device for the home map to center on the user.
+- The Google sign-in CTA is scaffolded; wire it to a provider or Clerk OAuth before production use.

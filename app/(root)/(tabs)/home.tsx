@@ -5,6 +5,7 @@ import { icons, images } from '@/constants';
 import { useLocationStore } from '@/store';
 import { useUser } from '@clerk/clerk-expo';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -126,7 +127,14 @@ export default function Page() {
 
   const [hasPermissions, setHasPermissions] = useState<boolean>(false);
   const handleSignOut = () => {};
-  const handleDestinationPress = () => {};
+  const handleDestinationPress = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
+    setDestinationLocation(location);
+    router.push('/(root)/find-ride');
+  };
   useEffect(() => {
     const requestLocation = async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -155,7 +163,7 @@ export default function Page() {
         data={recentRides?.slice(0, 5)}
         renderItem={({ item }) => <RideCard ride={item} />}
         className="px-5"
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={() => (
           <View className="flex flex-col items-center justify-center">

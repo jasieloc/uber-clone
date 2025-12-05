@@ -56,19 +56,32 @@ const GoogleTextInput = ({
           },
           listView: {
             backgroundColor: textInputBackgroundColor || 'white',
-            position: 'absolute',
-            top: 50,
-            left: 20,
-            right: 20,
             borderRadius: 10,
+            marginHorizontal: 20,
+            marginTop: 5,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
             elevation: 5,
-            zIndex: 1000,
+          },
+          row: {
+            backgroundColor: textInputBackgroundColor || 'white',
+            padding: 15,
+            minHeight: 44,
+          },
+          separator: {
+            height: 1,
+            backgroundColor: '#e0e0e0',
+          },
+          description: {
+            fontSize: 14,
           },
         }}
+        keyboardShouldPersistTaps="always"
+        listUnderlayColor="#e0e0e0"
+        isRowScrollable={false}
+        disableScroll={true}
         onPress={(data, details = null) => {
           console.log('GooglePlaces result:', { data, details });
           handlePress({
@@ -84,7 +97,7 @@ const GoogleTextInput = ({
         renderLeftButton={() => (
           <View className="justify-center items-center w-6 h-6">
             <Image
-              source={icon ? icon : icons.search}
+              source={icon || icons.search}
               className="w-6 h-6"
               resizeMode="contain"
             />
@@ -92,10 +105,6 @@ const GoogleTextInput = ({
         )}
         textInputProps={{
           placeholderTextColor: 'gray',
-          // placeholder: initialLocation ?? 'Where do you want to go?',
-          // onChangeText: (text) => console.log('🔤 Raw input:', text),
-          onFocus: () => console.log('🔍 Focused'),
-          onBlur: () => console.log('👋 Blurred'),
         }}
       />
     </View>

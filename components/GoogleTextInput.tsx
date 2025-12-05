@@ -15,13 +15,17 @@ const GoogleTextInput = ({
   console.log('Initial location:', initialLocation);
   return (
     <View
-      className={`flex flex-row items-center justify-center relative z-50 rounded-xl ${containerStyle} mb-5`}
+      style={{ zIndex: 50, elevation: 50 }}
+      className={`flex flex-row items-center justify-center relative rounded-xl ${containerStyle} mb-5`}
     >
       <GooglePlacesAutocomplete
         predefinedPlaces={[]}
         fetchDetails={true}
-        placeholder="Where do you want to go?"
+        placeholder={initialLocation ?? 'Where do you want to go?'}
         debounce={200}
+        timeout={15000}
+        // enablePoweredByContainer={false}
+        minLength={2}
         preProcess={(text) => {
           console.log('✅ GooglePlaces query text:', text);
           return text; // let the library keep using the value
@@ -29,6 +33,11 @@ const GoogleTextInput = ({
         onNotFound={() => console.log('⚠️ GooglePlaces: no matches returned')}
         onFail={(error) => console.log('❌ GooglePlaces error:', error)}
         styles={{
+          container: {
+            flex: 0,
+            width: '100%',
+            zIndex: 99,
+          },
           textInputContainer: {
             alignItems: 'center',
             justifyContent: 'center',
@@ -47,12 +56,17 @@ const GoogleTextInput = ({
           },
           listView: {
             backgroundColor: textInputBackgroundColor || 'white',
-            position: 'relative',
-            top: 0,
-            width: '100%',
+            position: 'absolute',
+            top: 50,
+            left: 20,
+            right: 20,
             borderRadius: 10,
-            shadowColor: '#d4d4d4',
-            zIndex: 99,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+            zIndex: 1000,
           },
         }}
         onPress={(data, details = null) => {
@@ -78,8 +92,8 @@ const GoogleTextInput = ({
         )}
         textInputProps={{
           placeholderTextColor: 'gray',
-          placeholder: initialLocation ?? 'Where do you want to go?',
-          onChangeText: (text) => console.log('🔤 Raw input:', text),
+          // placeholder: initialLocation ?? 'Where do you want to go?',
+          // onChangeText: (text) => console.log('🔤 Raw input:', text),
           onFocus: () => console.log('🔍 Focused'),
           onBlur: () => console.log('👋 Blurred'),
         }}

@@ -81,7 +81,7 @@ const GoogleTextInput = ({
         keyboardShouldPersistTaps="always"
         listUnderlayColor="#e0e0e0"
         isRowScrollable={false}
-        disableScroll={true}
+        disableScroll={false}
         onPress={(data, details = null) => {
           console.log('GooglePlaces result:', { data, details });
           handlePress({

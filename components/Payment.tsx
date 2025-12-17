@@ -1,5 +1,7 @@
 import { fetchAPI } from '@/lib/fetch';
+import { useLocationStore } from '@/store';
 import { PaymentProps } from '@/types/type';
+import { useAuth } from '@clerk/clerk-expo';
 import { useStripe } from '@stripe/stripe-react-native';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -12,49 +14,17 @@ const Payment = ({
   driverId,
   rideTime,
 }: PaymentProps) => {
+  const { userId } = useAuth();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [success, setSuccess] = useState(false);
-
-  const confirmHandler = async (paymentMethod, intentCreationCallback) => {
-    const { paymentIntent, customer } = await fetchAPI(
-      '/(api)/(stripe)/create',
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          name: fullName || email.split('@')[0],
-          email: email,
-          amount: amount,
-          paymentMethodId: paymentMethod.id,
-        }),
-      }
-    );
-
-    if (paymentIntent.client_secret) {
-      const { result } = await fetchAPI('/(api)/(stripe)/pay', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          payment_method_id: paymentMethod.id,
-          payment_intent_id: paymentIntent.id,
-          customer_id: customer,
-        }),
-      });
-      if (result.client_secret) {
-      }
-    }
-
-    const { clientSecret, error } = await response.json();
-    if (clientSecret) {
-      intentCreationCallback({
-        clientSecret,
-      });
-    } else {
-      intentCreationCallback({
-        error,
-      });
-    }
-  };
+  const {
+    userAddress,
+    userLongitude,
+    userLatitude,
+    destinationAddress,
+    destinationLongitude,
+    destinationLatitude,
+  } = useLocationStore();
 
   const initializePaymentSheet = async () => {
     const { error } = await initPaymentSheet({
@@ -64,11 +34,61 @@ const Payment = ({
           amount: 1099,
           currencyCode: 'USD',
         },
-        confirmHandler: confirmHandler,
+        confirmHandler: async (paymentMethod, intentCreationCallback) => {
+          const { paymentIntent, customer } = await fetchAPI(
+            '/(api)/(stripe)/create',
+            {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                name: fullName || email.split('@')[0],
+                email: email,
+                amount: amount,
+                paymentMethodId: paymentMethod.id,
+              }),
+            }
+          );
+
+          if (paymentIntent.client_secret) {
+            const { result } = await fetchAPI('/(api)/(stripe)/pay', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                payment_method_id: paymentMethod.id,
+                payment_intent_id: paymentIntent.id,
+                customer_id: customer,
+              }),
+            });
+            if (result.client_secret) {
+              await fetchAPI('/(api)/ride/create', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  origin_address: userAddress,
+                  origin_longitude: userLongitude,
+                  origin_latitude: userLatitude,
+                  destination_address: destinationAddress,
+                  destination_longitude: destinationLongitude,
+                  destination_latitude: destinationLatitude,
+                  ride_time: rideTime.toFixed(0),
+                  fare_price: Number.parseInt(amount) * 100,
+                  payment_status: 'paid',
+                  driver_id: driverId,
+                  user_id: userId,
+                }),
+              });
+              intentCreationCallback({
+                clientSecret: result.client_secret,
+              });
+            }
+          }
+        },
       },
+      returnURL: 'uberclone://book-ride',
     });
+
     if (error) {
-      // handle error
+      console.log(error);
     }
   };
 

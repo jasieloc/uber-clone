@@ -26,6 +26,27 @@ const Payment = ({
     destinationLatitude,
   } = useLocationStore();
 
+  /**
+   * Validates that all required fields for ride creation are present.
+   * Returns an error message if validation fails, or null if all fields are valid.
+   */
+  const validateRideRequirements = (): string | null => {
+    if (!userId) {
+      return 'User is not authenticated. Please sign in to continue.';
+    }
+    if (!userAddress || userLatitude == null || userLongitude == null) {
+      return 'Pickup location is missing. Please select a valid pickup address.';
+    }
+    if (
+      !destinationAddress ||
+      destinationLatitude == null ||
+      destinationLongitude == null
+    ) {
+      return 'Destination is missing. Please select a valid destination address.';
+    }
+    return null;
+  };
+
   const initializePaymentSheet = async () => {
     const { error } = await initPaymentSheet({
       merchantDisplayName: 'Example, Inc.',
@@ -35,6 +56,14 @@ const Payment = ({
           currencyCode: 'USD',
         },
         confirmHandler: async (paymentMethod, intentCreationCallback) => {
+          // Re-validate before API call to protect against race conditions
+          const validationError = validateRideRequirements();
+          if (validationError) {
+            Alert.alert('Ride Error', validationError);
+            // Abort the confirm flow by not calling intentCreationCallback
+            return;
+          }
+
           const { paymentIntent, customer } = await fetchAPI(
             '/(api)/(stripe)/create',
             {
@@ -93,6 +122,13 @@ const Payment = ({
   };
 
   const openPaymentSheet = async () => {
+    // Validate required fields before initializing payment
+    const validationError = validateRideRequirements();
+    if (validationError) {
+      Alert.alert('Cannot Proceed', validationError);
+      return;
+    }
+
     await initializePaymentSheet();
     const { error } = await presentPaymentSheet();
 

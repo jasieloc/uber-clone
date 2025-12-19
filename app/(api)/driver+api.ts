@@ -6,7 +6,7 @@ export async function GET() {
     const response = await sql`SELECT * FROM drivers;`;
     return Response.json({ data: response });
   } catch (error) {
-    console.log(error);
+    console.log(' Driver API Error', error);
     return Response.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

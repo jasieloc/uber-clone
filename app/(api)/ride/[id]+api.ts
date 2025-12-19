@@ -37,7 +37,7 @@ export async function GET(request: Request, { id }: { id: string }) {
         ORDER BY 
             rides.created_at DESC;
         `;
-
+    console.log(response);
     return Response.json({ data: response });
   } catch (error) {
     console.error('Error fetching recent rides:', error);

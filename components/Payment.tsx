@@ -1,10 +1,13 @@
+import { images } from '@/constants';
 import { fetchAPI } from '@/lib/fetch';
 import { useLocationStore } from '@/store';
 import { PaymentProps } from '@/types/type';
 import { useAuth } from '@clerk/clerk-expo';
 import { useStripe } from '@stripe/stripe-react-native';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Image, Text, View } from 'react-native';
+import { ReactNativeModal } from 'react-native-modal';
 import CustomButton from './CustomButton';
 
 const Payment = ({
@@ -49,13 +52,17 @@ const Payment = ({
 
   const initializePaymentSheet = async () => {
     const { error } = await initPaymentSheet({
-      merchantDisplayName: 'Example, Inc.',
+      merchantDisplayName: 'Ryde, Inc.',
       intentConfiguration: {
         mode: {
-          amount: 1099,
+          amount: Number.parseInt(amount) * 100,
           currencyCode: 'USD',
         },
-        confirmHandler: async (paymentMethod, intentCreationCallback) => {
+        confirmHandler: async (
+          paymentMethod,
+          shouldSavePaymentMethod,
+          intentCreationCallback
+        ) => {
           // Re-validate before API call to protect against race conditions
           const validationError = validateRideRequirements();
           if (validationError) {
@@ -146,6 +153,29 @@ const Payment = ({
         className="my-10"
         onPress={openPaymentSheet}
       />
+      <ReactNativeModal
+        isVisible={success}
+        onBackdropPress={() => setSuccess(false)}
+      >
+        <View className="flex flex-col items-center justify-center bg-white p-7 rounded-2xl">
+          <Image source={images.check} className="w-28 h-28 mt-5" />
+          <Text className="text-2xl text-center font-JakartaBold mt-5">
+            Ride Booked!
+          </Text>
+          <Text className="text-md text-general-200 font-JakartaMedium text-center mt-3">
+            Thank you for your booking. Your reservation has been placed. Plase
+            proceed with your trip!
+          </Text>
+          <CustomButton
+            title="Back Home"
+            onPress={() => {
+              setSuccess(false);
+              router.push('/(root)/(tabs)/home');
+            }}
+            className="mt-5"
+          />
+        </View>
+      </ReactNativeModal>
     </>
   );
 };
